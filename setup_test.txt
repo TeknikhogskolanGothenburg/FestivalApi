@@ -1,0 +1,21 @@
+dotnet new sln -o FestivalApi
+cd FestivalApi
+
+kopiera projekt
+dotnet sln add ./festival_api/festival_api.csproj
+
+dotnet new xunit -o festival_api.Tests
+
+
+dotnet add ./festival_api.Tests/festival_api.Tests.csproj reference ./festival_api/festival_api.csproj
+
+dotnet sln add ./festival_api.Tests/festival_api.Tests.csproj
+
+cd festival_api.Tests
+
+dotnet add package Moq.EntityFrameworkCore --version 3.1.2.1
+
+I ert projekt:
+	Skapa en default donctrucotr i er DbContext-klass
+
+	I er DbContext-klass markera era DbSet som virtual
