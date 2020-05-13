@@ -42,6 +42,7 @@ namespace festival_api.Tests
             var eventRepository = new EventRepository(festivalContextMock.Object, logger);
             // Act
             var theEvent = await eventRepository.GetEvent(1);
+            
 
             // Assert
             Assert.Equal(1, theEvent.EventId);

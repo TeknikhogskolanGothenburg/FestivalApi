@@ -13,7 +13,7 @@ namespace festival_api.Services
 
         public Repository(FestivalDbContext context, ILogger<Repository> logger)
         {
-            _festivalContext = context;
+            this._festivalContext = context;
             _logger = logger;
         }
         

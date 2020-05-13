@@ -19,7 +19,7 @@ namespace festival_api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<Event[]>> GetEvents([FromQuery]bool includeGigs = false)
+        public async Task<ActionResult<Event[]>> GetEvents(bool includeGigs = false)
         {
             try
             {
@@ -29,6 +29,34 @@ namespace festival_api.Controllers
             catch(Exception e)
             {
                 return this.StatusCode(StatusCodes.Status500InternalServerError, $"Database Failure: {e.Message}");
+            }
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Event>> GetEventById(int id, bool includeGigs=false)
+        {
+            try {
+                var result =  await _eventRepository.GetEvent(id, includeGigs);
+                return Ok(result);
+            }
+            catch(Exception e)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Database Failure: {e.Message}");
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<Event>> PostEvent(Event e)
+        {
+            // OBS Funkar ännu inte fullt ut
+            _eventRepository.Add(e);
+            if(await _eventRepository.Save())
+            {
+                return Created("", e);
+            }
+            else
+            {
+                return BadRequest();
             }
         }
     }
