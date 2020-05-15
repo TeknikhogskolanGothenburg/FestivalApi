@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace festival_api.Models
 {
@@ -8,6 +9,9 @@ namespace festival_api.Models
         public int EventId { get; set; }
         public string EventName { get; set; }
         public DateTime EventDate { get; set; }
+
+        [ForeignKey("VenueId")]
+        public int VenueId { get; set; }
         public Venue Venue { get; set; }
         public ICollection<Gig> Gigs { get; set; }
     }

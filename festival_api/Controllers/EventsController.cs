@@ -1,9 +1,13 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using festival_api.Dto;
 using festival_api.Models;
 using festival_api.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+
 
 namespace festival_api.Controllers
 {
@@ -12,19 +16,22 @@ namespace festival_api.Controllers
     public class EventsController: ControllerBase
     {
         private readonly IEventRepository _eventRepository;
+        private readonly IMapper _mapper; 
 
-        public EventsController(IEventRepository eventRepository)
+        public EventsController(IEventRepository eventRepository, IMapper mapper)
         {
             _eventRepository = eventRepository;
+            _mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<ActionResult<Event[]>> GetEvents(bool includeGigs = false)
+        public async Task<ActionResult<EventDto[]>> GetEvents(bool includeGigs = false)
         {
             try
             {
                 var results = await _eventRepository.GetEvents(includeGigs);
-                return Ok(results);
+                var mappedResults = _mapper.Map<EventDto[]>(results);
+                return Ok(mappedResults);
             }
             catch(Exception e)
             {
@@ -33,11 +40,12 @@ namespace festival_api.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Event>> GetEventById(int id, bool includeGigs=false)
+        public async Task<ActionResult<EventDto>> GetEventById(int id, bool includeGigs=false)
         {
             try {
                 var result =  await _eventRepository.GetEvent(id, includeGigs);
-                return Ok(result);
+                var mappedResult = _mapper.Map<EventDto>(result);
+                return Ok(mappedResult);
             }
             catch(Exception e)
             {
@@ -45,19 +53,43 @@ namespace festival_api.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<ActionResult<Event>> PostEvent(Event e)
+        [HttpGet("search")]
+        public async Task<ActionResult<EventDto[]>> GetEventsByDate(DateTime date, bool includeGigs=false)
         {
-            // OBS Funkar ännu inte fullt ut
-            _eventRepository.Add(e);
-            if(await _eventRepository.Save())
-            {
-                return Created("", e);
+            try {
+                var results =  await _eventRepository.GetEventsByDate(date, includeGigs);
+                if(!results.Any()) 
+                {
+                    return NotFound();
+                }
+
+                var mappedResults = _mapper.Map<EventDto[]>(results);
+                return Ok(mappedResults);
             }
-            else
+            catch(Exception e)
             {
-                return BadRequest();
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Database Failure: {e.Message}");
             }
+        }
+
+
+        [HttpPost]
+        public async Task<ActionResult<EventDto>> PostEvent(EventDto eventDto)
+        {
+            try
+            {
+                var mappedEntity = _mapper.Map<Event>(eventDto);
+                _eventRepository.Add(mappedEntity);
+                if(await _eventRepository.Save())
+                {
+                    return Created($"/api/v1.0/events/{mappedEntity.EventId}", _mapper.Map<EventDto>(mappedEntity));
+                }
+            }
+            catch(Exception e)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Database Failure: {e.Message}");
+            }
+            return BadRequest();
         }
     }
 }

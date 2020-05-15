@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using festival_api.DB_Context;
 using festival_api.Services;
 using Microsoft.AspNetCore.Builder;
@@ -20,6 +21,8 @@ namespace festival_api
         {
             services.AddDbContext<FestivalDbContext>();
             services.AddScoped<IEventRepository, EventRepository>();
+            services.AddAutoMapper(typeof(Startup));
+
             services.AddMvc(options => options.EnableEndpointRouting = false)
                 .SetCompatibilityVersion(Microsoft
                                         .AspNetCore
