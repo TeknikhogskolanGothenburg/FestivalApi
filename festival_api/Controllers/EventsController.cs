@@ -79,6 +79,7 @@ namespace festival_api.Controllers
             try
             {
                 var mappedEntity = _mapper.Map<Event>(eventDto);
+
                 _eventRepository.Add(mappedEntity);
                 if(await _eventRepository.Save())
                 {
@@ -91,5 +92,55 @@ namespace festival_api.Controllers
             }
             return BadRequest();
         }
+
+        [HttpPut("{eventId}")]
+        public async Task<ActionResult> PutEvent(int eventId, EventDto eventDto)
+        {
+            try
+            {
+                var oldEvent = await _eventRepository.GetEvent(eventId);
+                if(oldEvent == null)
+                {
+                    return NotFound($"Counld not find event with id {eventId}");
+                }   
+
+                var newEvent = _mapper.Map(eventDto, oldEvent);
+                _eventRepository.Update(newEvent);
+                if(await _eventRepository.Save())
+                {
+                    return NoContent();
+                }
+            }
+            catch(Exception e)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Database Failure: {e.Message}");
+            }
+            return BadRequest();
+        }
+
+        [HttpDelete("{eventId}")]
+        public async Task<ActionResult> DeleteEvent(int eventId)
+        {
+            try
+            {
+                var oldEvent = await _eventRepository.GetEvent(eventId);
+                if(oldEvent == null)
+                {
+                    return NotFound($"Counld not find event with id {eventId}");
+                }  
+                _eventRepository.Delete(oldEvent);
+                if(await _eventRepository.Save())
+                {
+                    return NoContent();
+                }
+            }
+            catch(Exception e)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Database Failure: {e.Message}");
+            }
+            return BadRequest();
+        }
+
+
     }
 }

@@ -9,7 +9,8 @@ namespace festival_api.Services
         public MappedProfile()
         {
             CreateMap<Event, EventDto>()
-                .ReverseMap();
+                .ReverseMap()
+                .ForMember(v => v.Venue, o => o.Ignore());
 
             CreateMap<Gig, GigDto>()
                 .ReverseMap();

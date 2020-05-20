@@ -2,12 +2,17 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using festival_api.DB_Context;
+using festival_api.Dto;
 using festival_api.Models;
 using festival_api.Services;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.EntityFrameworkCore;
 using Xunit;
+
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.Hosting;
+using System.Net.Http;
 
 namespace festival_api.Tests
 {
@@ -46,6 +51,27 @@ namespace festival_api.Tests
 
             // Assert
             Assert.Equal(1, theEvent.EventId);
+        }
+
+
+        [Fact]
+        public async void TestPost()
+        {
+            var server = new TestServer(new WebHostBuilder()
+                .UseStartup<Startup>());
+            var client = server.CreateClient();
+            
+            IList<Event> events = new List<Event>();
+            var festivalContextMock = new Mock<FestivalDbContext>();
+            festivalContextMock.Setup(e => e.Events).ReturnsDbSet(events);
+
+            var logger = Mock.Of<ILogger<EventRepository>>();
+            var eventRepository = new EventRepository(festivalContextMock.Object, logger);
+
+            var content = new System.Net.Http.StringContent("{EventName: Jaha, EventDate: 2020-10-10, VenueId: 1}");
+            HttpResponseMessage response = await client.PostAsync("http://localhost:5000/api/v1.0/events", content);
+            System.Console.WriteLine(response.StatusCode);
+            Assert.Equal("201", response.StatusCode.ToString());
         }
 
         private static IList<Event> GenerateEvents()
