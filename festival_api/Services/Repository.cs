@@ -17,7 +17,7 @@ namespace festival_api.Services
             _logger = logger;
         }
         
-        public void Add<T>(T entity) where T : class
+        public virtual void Add<T>(T entity) where T : class
         {
             _logger.LogInformation($"Adding object of type {entity.GetType()}");
             _festivalContext.Add(entity);
@@ -29,7 +29,7 @@ namespace festival_api.Services
             _festivalContext.Remove(entity);
         }
 
-        public async Task<bool> Save()
+        public virtual async Task<bool> Save()
         {
             _logger.LogInformation("Saving changes");
             return (await _festivalContext.SaveChangesAsync()) >= 0;

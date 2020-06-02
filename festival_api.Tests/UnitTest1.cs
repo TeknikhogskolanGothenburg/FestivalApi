@@ -13,6 +13,12 @@ using Xunit;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Hosting;
 using System.Net.Http;
+using System.Text;
+using Newtonsoft.Json;
+using festival_api.Controllers;
+using AutoMapper;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 
 namespace festival_api.Tests
 {
@@ -57,21 +63,32 @@ namespace festival_api.Tests
         [Fact]
         public async void TestPost()
         {
-            var server = new TestServer(new WebHostBuilder()
-                .UseStartup<Startup>());
-            var client = server.CreateClient();
+            // Arrange
+            var profile = new MappedProfile();
+            var configuration = new MapperConfiguration(cfg => cfg.AddProfile(profile));
+            IMapper mapper = new Mapper(configuration);
+
+            var eventRepoMock = new Mock<IEventRepository>();
+            eventRepoMock.Setup(r => r.Add<Event>(It.IsAny<Event>()));
+            eventRepoMock.Setup(r => r.GetEvents(It.IsAny<Boolean>())).Returns(Task.FromResult(new Event[1]));
+            eventRepoMock.Setup(r => r.Save()).Returns(Task.FromResult(true));
+
+            var controller = new EventsController(eventRepoMock.Object, mapper);
+            var dto = new EventDto
+            {
+                EventName = "Jaha",
+                EventDate = new DateTime(2020, 10, 22),
+                VenueId = 1
+            };
+
+            // Act
+            var result = await controller.PostEvent(dto);
             
-            IList<Event> events = new List<Event>();
-            var festivalContextMock = new Mock<FestivalDbContext>();
-            festivalContextMock.Setup(e => e.Events).ReturnsDbSet(events);
+            // Assert
+            var r = result.Result as CreatedResult;
+            var dtoResult = (EventDto)r.Value;
+            Assert.Equal("Jaha", dtoResult.EventName);
 
-            var logger = Mock.Of<ILogger<EventRepository>>();
-            var eventRepository = new EventRepository(festivalContextMock.Object, logger);
-
-            var content = new System.Net.Http.StringContent("{EventName: Jaha, EventDate: 2020-10-10, VenueId: 1}");
-            HttpResponseMessage response = await client.PostAsync("http://localhost:5000/api/v1.0/events", content);
-            System.Console.WriteLine(response.StatusCode);
-            Assert.Equal("201", response.StatusCode.ToString());
         }
 
         private static IList<Event> GenerateEvents()

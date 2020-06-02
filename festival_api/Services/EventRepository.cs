@@ -27,8 +27,9 @@ namespace festival_api.Services
             return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<Event[]> GetEvents(bool includeGigs = false)
+        public virtual async Task<Event[]> GetEvents(bool includeGigs = false)
         {
+            
             _logger.LogInformation("Getting events");
             IQueryable<Event> query = _festivalContext.Events
                 .Include(v => v.Venue);

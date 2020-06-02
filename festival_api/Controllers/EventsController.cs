@@ -25,7 +25,7 @@ namespace festival_api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<EventDto[]>> GetEvents(bool includeGigs = false)
+        public virtual async Task<ActionResult<EventDto[]>> GetEvents(bool includeGigs = false)
         {
             try
             {
